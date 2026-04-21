@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposal Generator AI — Commercial Proposal Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">PG</div>
+      <div class="brand-text">
+        <h1>Proposal Generator <span class="accent">AI</span></h1>
+        <p>Generate professional commercial proposals in seconds</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="api-key-wrap">
+        <input
+          type="password"
+          id="apiKey"
+          placeholder="sk-... (OpenAI API key)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="saveKeyBtn" class="btn btn-ghost" title="Save key in localStorage">Save</button>
+        <button id="clearKeyBtn" class="btn btn-ghost" title="Remove saved key">Clear</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- LEFT: FORM -->
+    <section class="panel panel-form" aria-label="Proposal input form">
+      <div class="panel-header">
+        <h2>Proposal brief</h2>
+        <span class="badge">Step 1</span>
+      </div>
+
+      <form id="proposalForm" class="form">
+        <div class="form-row">
+          <label for="senderCompany">Sender company</label>
+          <input type="text" id="senderCompany" placeholder="e.g. Acme Studio" required />
+        </div>
+
+        <div class="form-row">
+          <label for="receiverCompany">Recipient company</label>
+          <input type="text" id="receiverCompany" placeholder="e.g. Globex Corp." required />
+        </div>
+
+        <div class="form-row">
+          <label for="service">Service / Product</label>
+          <textarea
+            id="service"
+            rows="3"
+            placeholder="Describe what you're offering: scope, deliverables, technology..."
+            required
+          ></textarea>
+        </div>
+
+        <fieldset class="form-row">
+          <legend>Key advantages</legend>
+          <input type="text" id="adv1" placeholder="Advantage #1" required />
+          <input type="text" id="adv2" placeholder="Advantage #2" />
+          <input type="text" id="adv3" placeholder="Advantage #3" />
+        </fieldset>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label for="budgetFrom">Budget from</label>
+            <input type="text" id="budgetFrom" placeholder="10 000" required />
+          </div>
+          <div class="form-row">
+            <label for="budgetTo">Budget to</label>
+            <input type="text" id="budgetTo" placeholder="25 000" required />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="USD">USD — $</option>
+              <option value="EUR">EUR — €</option>
+              <option value="RUB">RUB — ₽</option>
+              <option value="GBP">GBP — £</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="deadline">Delivery timeframe</label>
+            <input type="text" id="deadline" placeholder="e.g. 6 weeks" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Tone of voice</label>
+          <div class="segmented" role="radiogroup" aria-label="Tone">
+            <input type="radio" name="tone" id="tone-formal" value="formal" checked />
+            <label for="tone-formal">Formal</label>
+
+            <input type="radio" name="tone" id="tone-friendly" value="friendly" />
+            <label for="tone-friendly">Friendly</label>
+
+            <input type="radio" name="tone" id="tone-sales" value="sales" />
+            <label for="tone-sales">Aggressive</label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Language</label>
+          <div class="segmented" role="radiogroup" aria-label="Language">
+            <input type="radio" name="lang" id="lang-ru" value="ru" checked />
+            <label for="lang-ru">Русский</label>
+
+            <input type="radio" name="lang" id="lang-en" value="en" />
+            <label for="lang-en">English</label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" id="generateBtn" class="btn btn-primary">
+            <span class="btn-icon" aria-hidden="true">✦</span>
+            <span class="btn-label">Generate proposal</span>
+          </button>
+        </div>
+
+        <p class="hint">
+          Your API key is stored only in your browser's localStorage. Requests are sent directly from your
+          browser to <code>api.openai.com</code>.
+        </p>
+      </form>
+    </section>
+
+    <!-- RIGHT: PREVIEW -->
+    <section class="panel panel-preview" aria-label="Proposal preview">
+      <div class="panel-header">
+        <h2>Preview</h2>
+        <div class="preview-actions">
+          <button id="copyBtn" class="btn btn-ghost" disabled>Copy text</button>
+          <button id="pdfBtn" class="btn btn-ghost" disabled>Download PDF</button>
+          <button id="regenBtn" class="btn btn-primary" disabled>Regenerate</button>
+        </div>
+      </div>
+
+      <div id="previewWrap" class="preview-wrap">
+        <!-- Empty state -->
+        <div id="emptyState" class="empty-state">
+          <div class="empty-illu">
+            <svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true">
+              <rect x="20" y="14" width="80" height="92" rx="8" fill="#1b2a3b" stroke="#3b82f6" stroke-width="2"/>
+              <rect x="32" y="30" width="56" height="6" rx="3" fill="#3b82f6" opacity=".7"/>
+              <rect x="32" y="44" width="40" height="4" rx="2" fill="#64748b"/>
+              <rect x="32" y="54" width="56" height="4" rx="2" fill="#64748b"/>
+              <rect x="32" y="64" width="48" height="4" rx="2" fill="#64748b"/>
+              <rect x="32" y="78" width="56" height="4" rx="2" fill="#64748b"/>
+              <rect x="32" y="88" width="30" height="4" rx="2" fill="#64748b"/>
+            </svg>
+          </div>
+          <h3>Your proposal will appear here</h3>
+          <p>Fill in the brief on the left and click <b>Generate proposal</b>.</p>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingState" class="loading-state" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <h3>Crafting your proposal...</h3>
+          <p>Using GPT-4o-mini to write a professional document.</p>
+        </div>
+
+        <!-- Error -->
+        <div id="errorState" class="error-state" hidden>
+          <h3>Something went wrong</h3>
+          <p id="errorMessage"></p>
+          <button id="errorRetry" class="btn btn-primary">Try again</button>
+        </div>
+
+        <!-- Document -->
+        <article id="proposalDoc" class="proposal-doc" hidden>
+          <!-- Rendered by app.js -->
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>Built with vanilla JS · OpenAI gpt-4o-mini · jsPDF</span>
+  </footer>
+
+  <!-- jsPDF (UMD) + html2canvas (needed for jsPDF to render HTML with Cyrillic) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+
+  <script src="generator.js" defer></script>
+  <script src="pdf-export.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
