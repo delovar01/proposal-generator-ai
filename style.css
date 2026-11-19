@@ -400,6 +400,15 @@ fieldset.form-row {
   min-height: 500px;
 }
 
+/* display: grid выше перебивал атрибут hidden: после генерации «загрузка» и «ошибка»
+   оставались на экране над готовым документом */
+.empty-state[hidden],
+.loading-state[hidden],
+.error-state[hidden],
+.proposal-doc[hidden] {
+  display: none;
+}
+
 .empty-state h3,
 .loading-state h3,
 .error-state h3 {
